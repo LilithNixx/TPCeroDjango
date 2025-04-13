@@ -31,9 +31,21 @@ def detail(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     return render(request, "polls/detail.html", {"question": question})
 
+#muestra los resultados de una pregunta específica, incluyendo probablemente cuántos votos tiene cada opción (Choice).
 def results(request, question_id):
-    return HttpResponse(response % question_id)
+    #Intenta obtener la instancia de Question con ID igual a question_id.
+    #Si no existe, muestra automáticamente una página 404.
+    #Si existe, la guarda en la variable question.
+    question = get_object_or_404(Question, pk=question_id)
+    #Renderiza la plantilla HTML polls/result.html.
+    #Le pasa el contexto {"question": question}.
+    return render(request, "polls/result.html", {"question": question})
 
+'''
+cuando usás render(request, "plantilla.html", contexto), ese tercer parámetro (contexto) es un diccionario de Python donde:
+la clave ("question") es el nombre con el que vas a acceder en la plantilla.
+el valor (question) es la variable de Python que contiene los datos (en este caso, una instancia del modelo Question).
+'''
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     try:
