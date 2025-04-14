@@ -4,6 +4,8 @@ from urllib import response
 from django.test import TestCase
 from django.utils import timezone
 from django.urls import reverse
+from django.views import generic
+
 
 from .models import Question
 
@@ -68,4 +70,27 @@ class QuestionIndexViewTests(TestCase):
         question2 = create_question(question_text = "Past question 2.", days= -5)
         response = self.client.get(reverse("polls:index"))
         self.assertQuerySetEqual(response.context["latest_question_list"], [question2, question1],)
+
+
+class DetailView(generic.DetailView):
+    #Excludes any questions that aren't published yet
+    def get_queryset(self):
+        return Question.objects.filter(pub_date_lte = timezone.now())
+    
+
+class QuestionDetailViewTests(TestCase):
+    #The detail view of a questioin with a pub_date in the future returns s 404 not found
+    def test_future_question(self):
+        future_question = create_question(question_text="Future question", days=5)
+        url = reverse("polls:detail", args= (future_question.id,))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
         
+    #The detail view of a question with a pub_date in the past displays the question's text
+    def test_past_question(self):
+        past_question = create_question(question_text= "Past Question.", days=-5)
+        url = reverse("polls:detail", args=(past_question.id,))
+        response = self.client.get(url)
+        self.assertContains(response, past_question.question_text)
+
+
