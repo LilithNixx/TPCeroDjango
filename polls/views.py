@@ -6,6 +6,7 @@ from . models import Question, Choice
 from django.db.models import F # Permite hacer operaciones directas en la base de datos (como votos + 1)
 from django.urls import reverse
 from django.views import generic
+from django.utils import timezone
 #from django.http import Http404
 
 
@@ -26,8 +27,9 @@ class IndexView(generic.ListView):
     context_objext_name = "latest_question_list"
     
     def get_queryset(self):
-        return Question.objects.order_by("-pub_date")[:5]
-        #return the last 5 published questions
+        return Question.objects.filter(pub_date__lte=timezone.now()).order_by("-pub_date")[:5]
+        #return the last 5 published questions (not including those set to be
+        #published in the future).
     
 '''
 def detail(request, question_id):
